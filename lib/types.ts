@@ -17,8 +17,8 @@ export interface Ilce {
   id: string;
   name: string;
   slug: string;
-  beoId: string;
-  dutyZone: string;
+  beoId?: string;
+  dutyZone?: string;
 }
 
 export interface Mahalle {
@@ -47,6 +47,8 @@ export interface NobetciData {
   date: string;
   dateLabel: string;
   fetchedAt: string;
+  city: string;
+  cityName: string;
 }
 
 export type GeolocationStatus =

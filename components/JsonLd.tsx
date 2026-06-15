@@ -5,6 +5,7 @@ interface JsonLdProps {
   description: string;
   url: string;
   eczaneler: Eczane[];
+  cityName?: string;
   scope?: Scope;
   breadcrumbs?: Array<{ name: string; url: string }>;
 }
@@ -14,6 +15,7 @@ export function JsonLd({
   description,
   url,
   eczaneler,
+  cityName = "Türkiye",
   scope,
   breadcrumbs = [],
 }: JsonLdProps) {
@@ -35,7 +37,7 @@ export function JsonLd({
           "@type": "PostalAddress",
           streetAddress: eczane.address,
           addressLocality: eczane.district,
-          addressRegion: "Bursa",
+          addressRegion: cityName,
           addressCountry: "TR",
         },
         geo: {
@@ -69,7 +71,7 @@ export function JsonLd({
     name: title,
     description,
     url,
-    about: scope?.label ?? "Bursa nöbetçi eczane",
+    about: scope?.label ?? `${cityName} nöbetçi eczane`,
   };
 
   const payloads = [webPage, itemList, breadcrumbList].filter(Boolean);

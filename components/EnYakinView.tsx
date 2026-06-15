@@ -11,9 +11,15 @@ import { useCallback, useEffect, useState } from "react";
 
 interface EnYakinViewProps {
   eczaneler: Eczane[];
+  citySlug: string;
+  cityName: string;
 }
 
-export function EnYakinView({ eczaneler }: EnYakinViewProps) {
+export function EnYakinView({
+  eczaneler,
+  citySlug,
+  cityName,
+}: EnYakinViewProps) {
   const [geoStatus, setGeoStatus] = useState<
     "idle" | "requesting" | "granted" | "denied" | "unavailable"
   >("idle");
@@ -80,7 +86,7 @@ export function EnYakinView({ eczaneler }: EnYakinViewProps) {
         label: selectedDistrict,
         district: selectedDistrict,
       }
-    : { type: "all" as const, label: "Bursa" };
+    : { type: "all" as const, label: cityName };
 
   return (
     <div className="space-y-3 md:space-y-4">
@@ -89,7 +95,7 @@ export function EnYakinView({ eczaneler }: EnYakinViewProps) {
           En Yakın Nöbetçi Eczane
         </h1>
         <p className="mt-1 max-w-2xl text-xs text-emerald-50 md:mt-2 md:text-base">
-          Konumunu paylaşırsan bugün Bursa&apos;da sana en yakın nöbetçi
+          Konumunu paylaşırsan bugün {cityName}&apos;da sana en yakın nöbetçi
           eczaneyi anında gösteririz.
         </p>
 
@@ -111,13 +117,14 @@ export function EnYakinView({ eczaneler }: EnYakinViewProps) {
               className="w-full rounded-xl border border-white/20 bg-white px-3 py-2.5 text-sm text-zinc-900 md:px-4 md:py-3"
             >
               <option value="">İlçe seçin</option>
-              {getUniqueIlceler().map((ilce) => (
+              {getUniqueIlceler(citySlug).map((ilce) => (
                 <option key={ilce.id} value={ilce.name}>
                   {ilce.name}
                 </option>
               ))}
             </select>
             <DistrictPicker
+              citySlug={citySlug}
               selectClassName="border-white/20"
               buttonClassName="bg-white text-emerald-800 hover:bg-emerald-50"
             />
@@ -178,7 +185,7 @@ export function EnYakinView({ eczaneler }: EnYakinViewProps) {
           eczaneler={eczaneler}
           scope={
             geoStatus === "granted"
-              ? { type: "all", label: "Bursa" }
+              ? { type: "all", label: cityName }
               : fallbackScope
           }
           autoLocate={geoStatus === "granted"}
@@ -189,10 +196,10 @@ export function EnYakinView({ eczaneler }: EnYakinViewProps) {
 
       <div className="pb-4 text-center">
         <Link
-          href="/"
+          href={`/${citySlug}`}
           className="text-sm font-medium text-emerald-700 hover:text-emerald-800"
         >
-          Tüm Bursa nöbetçi eczanelerine dön
+          Tüm {cityName} nöbetçi eczanelerine dön
         </Link>
       </div>
     </div>

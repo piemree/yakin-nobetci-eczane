@@ -20,9 +20,15 @@ import {
 import L from "leaflet";
 import { getDirectionsUrl } from "@/lib/geo";
 import type { Coordinates } from "@/lib/geo";
-import { getPharmacyIcon, userIcon } from "@/lib/map-icons";
+import {
+  createEczaneClusterIcon,
+  getPharmacyIcon,
+  userIcon,
+} from "@/lib/map-icons";
 import type { EczaneWithDistance } from "@/lib/types";
+import MarkerClusterGroup from "react-leaflet-cluster";
 import "leaflet/dist/leaflet.css";
+import "react-leaflet-cluster/dist/assets/MarkerCluster.css";
 
 export interface EczaneMapHandle {
   flyToUser: () => void;
@@ -221,28 +227,41 @@ export const EczaneMap = forwardRef<EczaneMapHandle, EczaneMapProps>(
               />
             </>
           )}
-          {eczaneler.map((eczane) => (
-            <Marker
-              key={eczane.id}
-              ref={(marker) => {
-                if (marker) {
-                  markerRefs.current.set(eczane.id, marker);
-                } else {
-                  markerRefs.current.delete(eczane.id);
-                }
-              }}
-              position={[eczane.lat, eczane.lng]}
-              icon={getPharmacyIcon(selectedId === eczane.id)}
-              title={eczane.name}
-              eventHandlers={{
-                click: () => onSelect?.(eczane),
-              }}
-            >
-              <Popup className="eczane-leaflet-popup" minWidth={240} maxWidth={280}>
-                <EczanePopupContent eczane={eczane} />
-              </Popup>
-            </Marker>
-          ))}
+          <MarkerClusterGroup
+            chunkedLoading
+            showCoverageOnHover={false}
+            spiderfyOnMaxZoom
+            maxClusterRadius={50}
+            disableClusteringAtZoom={16}
+            iconCreateFunction={createEczaneClusterIcon}
+          >
+            {eczaneler.map((eczane) => (
+              <Marker
+                key={eczane.id}
+                ref={(marker) => {
+                  if (marker) {
+                    markerRefs.current.set(eczane.id, marker);
+                  } else {
+                    markerRefs.current.delete(eczane.id);
+                  }
+                }}
+                position={[eczane.lat, eczane.lng]}
+                icon={getPharmacyIcon(selectedId === eczane.id)}
+                title={eczane.name}
+                eventHandlers={{
+                  click: () => onSelect?.(eczane),
+                }}
+              >
+                <Popup
+                  className="eczane-leaflet-popup"
+                  minWidth={240}
+                  maxWidth={280}
+                >
+                  <EczanePopupContent eczane={eczane} />
+                </Popup>
+              </Marker>
+            ))}
+          </MarkerClusterGroup>
         </MapContainer>
       </div>
     );

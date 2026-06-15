@@ -5,12 +5,14 @@ import { useState } from "react";
 import { getUniqueIlceler } from "@/lib/data";
 
 interface DistrictPickerProps {
+  citySlug: string;
   className?: string;
   selectClassName?: string;
   buttonClassName?: string;
 }
 
 export function DistrictPicker({
+  citySlug,
   className = "",
   selectClassName = "",
   buttonClassName = "",
@@ -20,7 +22,7 @@ export function DistrictPicker({
 
   const navigate = (slug: string) => {
     if (!slug) return;
-    router.push(`/${slug}`);
+    router.push(`/${citySlug}/${slug}`);
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -45,7 +47,7 @@ export function DistrictPicker({
         className={`min-w-0 flex-1 rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm outline-none ring-emerald-500 focus:ring-2 ${selectClassName}`}
       >
         <option value="">İlçe seçin</option>
-        {getUniqueIlceler().map((ilce) => (
+        {getUniqueIlceler(citySlug).map((ilce) => (
           <option key={ilce.id} value={ilce.slug}>
             {ilce.name}
           </option>

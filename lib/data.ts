@@ -1,26 +1,38 @@
-import ilcelerData from "@/data/ilceler.json";
-import mahallelerData from "@/data/mahalleler.json";
+import { getCity, getCityOrNull } from "@/lib/cities/registry";
 import { stripNobetciSuffix } from "./slug";
 import type { Ilce, Mahalle, Scope } from "./types";
 
-export const ilceler = ilcelerData as Ilce[];
-export const mahalleler = mahallelerData as Mahalle[];
-
 /** BEO nöbet bölgeleri aynı ilçeyi birden fazla satırda tutabiliyor; UI için tekilleştir. */
-export function getUniqueIlceler(): Ilce[] {
+export function getUniqueIlceler(citySlug: string): Ilce[] {
+  const city = getCity(citySlug);
   const seen = new Set<string>();
-  return ilceler.filter((ilce) => {
+  return city.ilceler.filter((ilce) => {
     if (seen.has(ilce.id)) return false;
     seen.add(ilce.id);
     return true;
   });
 }
 
-const ilceBySlug = new Map(ilceler.map((ilce) => [ilce.slug, ilce]));
-const ilceById = new Map(ilceler.map((ilce) => [ilce.id, ilce]));
-const mahalleBySlug = new Map(mahalleler.map((mahalle) => [mahalle.slug, mahalle]));
+function buildCityMaps(citySlug: string) {
+  const city = getCity(citySlug);
+  return {
+    ilceBySlug: new Map(city.ilceler.map((ilce) => [ilce.slug, ilce])),
+    ilceById: new Map(city.ilceler.map((ilce) => [ilce.id, ilce])),
+    mahalleBySlug: new Map(city.mahalleler.map((mahalle) => [mahalle.slug, mahalle])),
+    ilceler: city.ilceler,
+    mahalleler: city.mahalleler,
+  };
+}
 
-export function resolveScopeFromSlug(rawSlug: string): Scope | null {
+export function resolveScopeFromSlug(
+  citySlug: string,
+  rawSlug: string,
+): Scope | null {
+  const city = getCityOrNull(citySlug);
+  if (!city) return null;
+
+  const { ilceBySlug, ilceById, mahalleBySlug, ilceler, mahalleler } =
+    buildCityMaps(citySlug);
   const base = stripNobetciSuffix(rawSlug);
 
   const ilce =
@@ -53,26 +65,28 @@ export function resolveScopeFromSlug(rawSlug: string): Scope | null {
   return null;
 }
 
-export function getAllStaticSlugs(): string[] {
-  const ilceSlugs = ilceler.map((ilce) => ilce.slug);
-  const mahalleSlugs = mahalleler.map((mahalle) => mahalle.slug);
+export function getAllStaticSlugs(citySlug: string): string[] {
+  const city = getCity(citySlug);
+  const ilceSlugs = city.ilceler.map((ilce) => ilce.slug);
+  const mahalleSlugs = city.mahalleler.map((mahalle) => mahalle.slug);
   return [...new Set([...ilceSlugs, ...mahalleSlugs])];
 }
 
-export function getSearchItems() {
+export function getSearchItems(citySlug: string) {
+  const city = getCity(citySlug);
   return [
-    ...ilceler.map((ilce) => ({
+    ...city.ilceler.map((ilce) => ({
       type: "district" as const,
       label: ilce.name,
       subtitle: "İlçe",
-      href: `/${ilce.slug}`,
-      keywords: [ilce.name, ilce.dutyZone],
+      href: `/${citySlug}/${ilce.slug}`,
+      keywords: [ilce.name, ilce.dutyZone ?? ""],
     })),
-    ...mahalleler.map((mahalle) => ({
+    ...city.mahalleler.map((mahalle) => ({
       type: "mahalle" as const,
       label: mahalle.name.replace(/ Mahallesi$/i, ""),
       subtitle: mahalle.district,
-      href: `/${mahalle.slug}`,
+      href: `/${citySlug}/${mahalle.slug}`,
       keywords: [mahalle.name, mahalle.district],
     })),
   ];

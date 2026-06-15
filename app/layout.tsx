@@ -19,17 +19,17 @@ const siteUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Bursa Nöbetçi Eczane | En Yakın Nöbetçi Eczaneler",
-    template: "%s | Bursa Nöbetçi Eczane",
+    default: "Nöbetçi Eczane | En Yakın Nöbetçi Eczaneler",
+    template: "%s | Nöbetçi Eczane",
   },
   description:
-    "Bursa'da bugün nöbetçi eczaneleri harita ve konumuna göre en yakından başlayarak bul. Resmi Bursa Eczacı Odası verileriyle güncel liste.",
-  applicationName: "Bursa Nöbetçi Eczane",
+    "Türkiye'de nöbetçi eczaneleri harita ve konumuna göre en yakından başlayarak bul. Şehrini seçerek güncel nöbetçi eczane listesine ulaş.",
+  applicationName: "Nöbetçi Eczane",
   keywords: [
-    "bursa nöbetçi eczane",
-    "nöbetçi eczane bursa",
+    "nöbetçi eczane",
     "en yakın nöbetçi eczane",
-    "açık eczane bursa",
+    "açık eczane",
+    "nöbetçi eczane harita",
   ],
   icons: {
     icon: [
@@ -65,18 +65,6 @@ export default function RootLayout({
       <body className="min-h-full bg-zinc-50 text-zinc-900">
         <SiteHeader />
         <main className="mx-auto max-w-6xl px-4 py-4 md:py-8">{children}</main>
-        <footer className="hidden border-t border-zinc-200 bg-white py-6 text-center text-sm text-zinc-500 md:block">
-          Veriler{" "}
-          <a
-            href="https://www.beo.org.tr/nobetci-eczaneler"
-            className="font-medium text-emerald-700 hover:underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Bursa Eczacı Odası
-          </a>{" "}
-          resmi yayınından alınır ve her gün güncellenir.
-        </footer>
       </body>
     </html>
   );

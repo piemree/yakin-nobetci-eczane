@@ -1,71 +1,53 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { JsonLd } from "@/components/JsonLd";
-import { EczaneSeoList } from "@/components/EczaneSeoList";
-import { MapExplorerClient } from "@/components/MapExplorerClient";
-import { DistrictPicker } from "@/components/DistrictPicker";
-import { formatTurkishDate } from "@/lib/date";
-import { getNobetciEczaneler } from "@/lib/scrape";
+import { getEnabledCities } from "@/lib/cities/registry";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://bursa-en-yakin-eczane.vercel.app";
 
 export const metadata: Metadata = {
-  title: "Bursa Nöbetçi Eczane",
+  title: "Nöbetçi Eczane | Şehir Seçin",
   description:
-    "Bursa'da bugün nöbetçi eczaneleri harita ve konumuna göre en yakından başlayarak bul. Resmi Bursa Eczacı Odası verileriyle güncel liste.",
+    "Türkiye'de nöbetçi eczaneleri harita ve konumuna göre bul. Şehrini seçerek güncel nöbetçi eczane listesine ulaş.",
   alternates: {
     canonical: siteUrl,
   },
 };
 
-export default async function HomePage() {
-  const data = await getNobetciEczaneler();
-  const title = `Bursa Nöbetçi Eczane - ${formatTurkishDate()}`;
+export default function HomePage() {
+  const cities = getEnabledCities();
 
   return (
-    <>
-      <JsonLd
-        title={title}
-        description="Bursa'da bugün nöbetçi eczaneler listesi, harita ve konuma göre en yakın sıralama."
-        url={siteUrl}
-        eczaneler={data.eczaneler}
-        breadcrumbs={[{ name: "Ana Sayfa", url: siteUrl }]}
-      />
-      <EczaneSeoList eczaneler={data.eczaneler} />
+    <section className="space-y-6">
+      <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200 md:rounded-3xl md:p-8">
+        <h1 className="text-2xl font-bold text-zinc-900 md:text-4xl">
+          Nöbetçi Eczane
+        </h1>
+        <p className="mt-2 max-w-2xl text-zinc-600">
+          Bugün nöbetçi eczaneleri harita üzerinde gör, konumuna göre en yakından
+          başlayarak sırala veya ilçe/mahalle ara. Başlamak için şehrini seç.
+        </p>
+      </div>
 
-      <section className="space-y-4">
-        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-zinc-200 md:rounded-3xl md:p-6">
-          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 md:text-sm">
-            {data.dateLabel}
-          </p>
-          <h1 className="mt-1 text-2xl font-bold text-zinc-900 md:mt-2 md:text-4xl">
-            Bursa Nöbetçi Eczane
-          </h1>
-          <p className="mt-2 hidden text-zinc-600 md:block">
-            Bugün Bursa&apos;da nöbetçi eczaneleri harita üzerinde gör, konumuna
-            göre en yakından başlayarak sırala veya mahalle/ilçe ara.
-          </p>
-
-          <div className="mt-4 space-y-3">
-            <DistrictPicker />
-            <Link
-              href="/en-yakin-nobetci-eczane"
-              className="inline-flex rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
-            >
-              En yakın nöbetçi eczaneyi bul
-            </Link>
-          </div>
-        </div>
-
-        <div className="-mx-4 md:mx-0">
-          <MapExplorerClient
-            eczaneler={data.eczaneler}
-            scope={{ type: "all", label: "Bursa" }}
-            className="map-explorer--page"
-          />
-        </div>
-      </section>
-    </>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {cities.map((city) => (
+          <Link
+            key={city.slug}
+            href={`/${city.slug}`}
+            className="group rounded-2xl bg-white p-5 shadow-sm ring-1 ring-zinc-200 transition hover:ring-emerald-500 md:p-6"
+          >
+            <h2 className="text-xl font-bold text-zinc-900 group-hover:text-emerald-700">
+              {city.name}
+            </h2>
+            <p className="mt-1 text-sm text-zinc-600">
+              {city.name} nöbetçi eczaneleri
+            </p>
+            <span className="mt-3 inline-flex text-sm font-semibold text-emerald-700">
+              Listeyi gör →
+            </span>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }

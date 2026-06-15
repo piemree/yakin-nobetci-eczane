@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Bursa Nöbetçi Eczane",
+    name: "Nöbetçi Eczane",
     short_name: "Nöbetçi Eczane",
     description:
-      "Bursa'da en yakın nöbetçi eczaneyi harita ve konum ile bul.",
+      "Türkiye'de en yakın nöbetçi eczaneyi harita ve konum ile bul.",
     start_url: "/",
     display: "standalone",
     background_color: "#fafafa",

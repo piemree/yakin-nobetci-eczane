@@ -4,6 +4,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { EczaneSeoList } from "@/components/EczaneSeoList";
 import { MapExplorerClient } from "@/components/MapExplorerClient";
 import { DistrictPicker } from "@/components/DistrictPicker";
+import { getEnabledCities, getCityOrNull } from "@/lib/cities/registry";
 import { getAllStaticSlugs, resolveScopeFromSlug } from "@/lib/data";
 import { formatTurkishDate } from "@/lib/date";
 import { filterEczanelerByDistrict, getNobetciEczaneler } from "@/lib/scrape";
@@ -13,17 +14,27 @@ const siteUrl =
 
 export const dynamicParams = true;
 
-export async function generateStaticParams() {
-  return getAllStaticSlugs().map((slug) => ({ slug }));
-}
-
 type PageProps = {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ city: string; slug: string }>;
 };
 
+export async function generateStaticParams() {
+  return getEnabledCities().flatMap((city) =>
+    getAllStaticSlugs(city.slug).map((slug) => ({
+      city: city.slug,
+      slug,
+    })),
+  );
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const scope = resolveScopeFromSlug(slug);
+  const { city: citySlug, slug } = await params;
+  const city = getCityOrNull(citySlug);
+  if (!city?.enabled) {
+    return { title: "Sayfa bulunamadı" };
+  }
+
+  const scope = resolveScopeFromSlug(citySlug, slug);
   if (!scope) {
     return { title: "Sayfa bulunamadı" };
   }
@@ -42,22 +53,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     keywords: [
       `${scope.label} nöbetçi eczane`,
       `${scope.label} nöbetçi`,
-      "nöbetçi eczane bursa",
+      `nöbetçi eczane ${city.name.toLowerCase()}`,
       "açık eczane",
       scope.district ?? scope.label,
     ],
     alternates: {
-      canonical: `${siteUrl}/${slug}`,
+      canonical: `${siteUrl}/${citySlug}/${slug}`,
     },
   };
 }
 
 export default async function SlugPage({ params }: PageProps) {
-  const { slug } = await params;
-  const scope = resolveScopeFromSlug(slug);
+  const { city: citySlug, slug } = await params;
+  const city = getCityOrNull(citySlug);
+  if (!city?.enabled) notFound();
+
+  const scope = resolveScopeFromSlug(citySlug, slug);
   if (!scope) notFound();
 
-  const data = await getNobetciEczaneler();
+  const data = await getNobetciEczaneler(citySlug);
   const eczaneler =
     scope.type === "district" && scope.district
       ? filterEczanelerByDistrict(data.eczaneler, scope.district)
@@ -65,7 +79,7 @@ export default async function SlugPage({ params }: PageProps) {
         ? filterEczanelerByDistrict(data.eczaneler, scope.district)
         : data.eczaneler;
 
-  const pageUrl = `${siteUrl}/${slug}`;
+  const pageUrl = `${siteUrl}/${citySlug}/${slug}`;
   const title = `${scope.label} Nöbetçi Eczane - ${data.dateLabel}`;
 
   return (
@@ -76,8 +90,10 @@ export default async function SlugPage({ params }: PageProps) {
         url={pageUrl}
         eczaneler={eczaneler}
         scope={scope}
+        cityName={city.name}
         breadcrumbs={[
           { name: "Ana Sayfa", url: siteUrl },
+          { name: city.name, url: `${siteUrl}/${citySlug}` },
           { name: scope.label, url: pageUrl },
         ]}
       />
@@ -99,7 +115,7 @@ export default async function SlugPage({ params }: PageProps) {
             bulundu.
           </p>
           <div className="mt-4">
-            <DistrictPicker />
+            <DistrictPicker citySlug={citySlug} />
           </div>
         </div>
 
